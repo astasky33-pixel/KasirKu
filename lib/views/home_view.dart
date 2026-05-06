@@ -38,69 +38,87 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Display Area
-        Expanded(
-          flex: 2,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            alignment: Alignment.bottomRight,
-            color: Theme.of(context).colorScheme.surfaceVariant,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text(
-                  'Total Belanja',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    _display,
-                    style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
             ),
-          ),
-        ),
-
-        // Calculator Buttons
-        Expanded(
-          flex: 5,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              children: [
-                _buildButtonRow(['7', '8', '9', '/']),
-                _buildButtonRow(['4', '5', '6', '*']),
-                _buildButtonRow(['1', '2', '3', '-']),
-                _buildButtonRow(['C', '0', '=', '+']),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // Logic to save transaction
-                    },
-                    icon: const Icon(Icons.save),
-                    label: const Text('Simpan Transaksi', style: TextStyle(fontSize: 18)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+                  // Display Area
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      alignment: Alignment.bottomRight,
+                      color: Theme.of(context).colorScheme.surfaceVariant,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            'Total Belanja',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _display,
+                              style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+
+                  // Calculator Buttons
+                  Expanded(
+                    flex: 5,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      child: Column(
+                        children: [
+                          _buildButtonRow(['7', '8', '9', '/']),
+                          _buildButtonRow(['4', '5', '6', '*']),
+                          _buildButtonRow(['1', '2', '3', '-']),
+                          _buildButtonRow(['C', '0', '=', '+']),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 50, // Slightly reduced height
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  // Logic to save transaction
+                                },
+                                icon: const Icon(Icons.save),
+                                label: const Text('Simpan Transaksi', style: TextStyle(fontSize: 16)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
