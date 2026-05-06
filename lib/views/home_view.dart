@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../providers/calculator_provider.dart';
+import '../providers/analytics_provider.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -9,35 +12,13 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  String _display = '0';
   final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
-  void _onNumberPressed(String value) {
-    setState(() {
-      if (_display == '0') {
-        _display = value;
-      } else {
-        _display += value;
-      }
-    });
-  }
-
-  void _onOperatorPressed(String operator) {
-    // Basic operator logic will be handled by Provider in Phase 3
-    // For Phase 2, we just update the UI
-    setState(() {
-      _display += ' $operator ';
-    });
-  }
-
-  void _clear() {
-    setState(() {
-      _display = '0';
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final calculator = Provider.of<CalculatorProvider>(context);
+    final analytics = Provider.of<AnalyticsProvider>(context, listen: false);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -60,14 +41,14 @@ class _HomeViewState extends State<HomeView> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text(
-                            'Total Belanja',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          Text(
+                            calculator.history.isEmpty ? 'Total Belanja' : calculator.history,
+                            style: const TextStyle(fontSize: 16, color: Colors.grey),
                           ),
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              _display,
+                              calculator.display,
                               style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                               textAlign: TextAlign.right,
                             ),
@@ -84,19 +65,27 @@ class _HomeViewState extends State<HomeView> {
                       padding: const EdgeInsets.all(8),
                       child: Column(
                         children: [
-                          _buildButtonRow(['7', '8', '9', '/']),
-                          _buildButtonRow(['4', '5', '6', '*']),
-                          _buildButtonRow(['1', '2', '3', '-']),
-                          _buildButtonRow(['C', '0', '=', '+']),
+                          _buildButtonRow(context, ['7', '8', '9', '/']),
+                          _buildButtonRow(context, ['4', '5', '6', '*']),
+                          _buildButtonRow(context, ['1', '2', '3', '-']),
+                          _buildButtonRow(context, ['C', '0', '=', '+']),
                           const SizedBox(height: 8),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: SizedBox(
                               width: double.infinity,
-                              height: 50, // Slightly reduced height
+                              height: 50,
                               child: ElevatedButton.icon(
-                                onPressed: () {
-                                  // Logic to save transaction
+                                onPressed: () async {
+                                  if (calculator.display != '0' && calculator.display != 'Error') {
+                                    await calculator.saveTransaction();
+                                    analytics.loadTransactions(); // Refresh analytics
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Transaksi disimpan!')),
+                                      );
+                                    }
+                                  }
                                 },
                                 icon: const Icon(Icons.save),
                                 label: const Text('Simpan Transaksi', style: TextStyle(fontSize: 16)),
@@ -122,28 +111,32 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildButtonRow(List<String> labels) {
+  Widget _buildButtonRow(BuildContext context, List<String> labels) {
     return Expanded(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: labels.map((label) => _buildButton(label)).toList(),
+        children: labels.map((label) => _buildButton(context, label)).toList(),
       ),
     );
   }
 
-  Widget _buildButton(String label) {
+  Widget _buildButton(BuildContext context, String label) {
+    final calculator = Provider.of<CalculatorProvider>(context, listen: false);
     bool isOperator = ['/', '*', '-', '+', '=', 'C'].contains(label);
+    
     return Expanded(
       child: Container(
         margin: const EdgeInsets.all(4),
         child: OutlinedButton(
           onPressed: () {
             if (label == 'C') {
-              _clear();
-            } else if (isOperator) {
-              _onOperatorPressed(label);
+              calculator.clear();
+            } else if (label == '=') {
+              calculator.calculate();
+            } else if (['/', '*', '-', '+'].contains(label)) {
+              calculator.append(' $label ');
             } else {
-              _onNumberPressed(label);
+              calculator.append(label);
             }
           },
           style: OutlinedButton.styleFrom(

@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../providers/analytics_provider.dart';
 
 class AnalyticsView extends StatelessWidget {
   const AnalyticsView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final analytics = Provider.of<AnalyticsProvider>(context);
+    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
     return Scaffold(
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -18,7 +24,7 @@ class AnalyticsView extends StatelessWidget {
                   child: _buildSummaryCard(
                     context, 
                     'Total Hari Ini', 
-                    'Rp 500.000', 
+                    currencyFormatter.format(analytics.totalToday), 
                     Colors.blue
                   ),
                 ),
@@ -27,7 +33,7 @@ class AnalyticsView extends StatelessWidget {
                   child: _buildSummaryCard(
                     context, 
                     'Total Minggu Ini', 
-                    'Rp 3.500.000', 
+                    currencyFormatter.format(analytics.totalWeekly), 
                     Colors.green
                   ),
                 ),
@@ -56,7 +62,7 @@ class AnalyticsView extends StatelessWidget {
                   children: [
                     Icon(Icons.bar_chart, size: 64, color: Colors.grey),
                     SizedBox(height: 8),
-                    Text('Grafik akan muncul di sini (Phase 4)', style: TextStyle(color: Colors.grey)),
+                    Text('Grafik sedang disiapkan (Fase 4)', style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),
@@ -83,12 +89,15 @@ class AnalyticsView extends StatelessWidget {
             style: TextStyle(fontSize: 14, color: color.withOpacity(0.8)),
           ),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20, 
-              fontWeight: FontWeight.bold, 
-              color: color
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 20, 
+                fontWeight: FontWeight.bold, 
+                color: color
+              ),
             ),
           ),
         ],

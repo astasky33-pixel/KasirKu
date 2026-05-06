@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
+import '../models/transaction.dart';
+import '../services/hive_service.dart';
+import 'package:uuid/uuid.dart';
+
+class CalculatorProvider with ChangeNotifier {
+  String _display = '0';
+  String _history = '';
+
+  String get display => _display;
+  String get history => _history;
+
+  void append(String value) {
+    if (_display == '0') {
+      _display = value;
+    } else {
+      _display += value;
+    }
+    notifyListeners();
+  }
+
+  void clear() {
+    _display = '0';
+    _history = '';
+    notifyListeners();
+  }
+
+  void calculate() {
+    try {
+      Parser p = Parser();
+      Expression exp = p.parse(_display);
+      ContextModel cm = ContextModel();
+      double eval = exp.evaluate(EvaluationType.REAL, cm);
+      
+      _history = _display;
+      _display = eval.toStringAsFixed(0);
+      if (_display.endsWith('.0')) {
+        _display = _display.substring(0, _display.length - 2);
+      }
+    } catch (e) {
+      _display = 'Error';
+    }
+    notifyListeners();
+  }
+
+  Future<void> saveTransaction() async {
+    double? amount = double.tryParse(_display);
+    if (amount != null && amount > 0) {
+      final transaction = Transaction(
+        id: const Uuid().v4(),
+        amount: amount,
+        timestamp: DateTime.now(),
+      );
+      await HiveService.addTransaction(transaction);
+      clear();
+    }
+  }
+}
