@@ -44,7 +44,7 @@ class CalculatorProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveTransaction() async {
+  Future<bool> saveTransaction() async {
     double? amount = double.tryParse(_display);
     if (amount != null && amount > 0) {
       final transaction = Transaction(
@@ -54,6 +54,8 @@ class CalculatorProvider with ChangeNotifier {
       );
       await HiveService.addTransaction(transaction);
       clear();
+      return true;
     }
+    return false;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../providers/analytics_provider.dart';
 
 class AnalyticsView extends StatelessWidget {
@@ -10,6 +11,7 @@ class AnalyticsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final analytics = Provider.of<AnalyticsProvider>(context);
     final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final dailyRevenue = analytics.getDailyRevenueLast7Days();
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -40,37 +42,115 @@ class AnalyticsView extends StatelessWidget {
               ],
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             
             // Chart Section
             const Text(
-              'Fluktuasi Pendapatan (7 Hari Terakhir)',
+              'Tren Pendapatan (7 Hari Terakhir)',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            Container(
-              height: 300,
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.bar_chart, size: 64, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text('Grafik sedang disiapkan (Fase 4)', style: TextStyle(color: Colors.grey)),
-                  ],
+            
+            AspectRatio(
+              aspectRatio: 1.5,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: _getMaxY(dailyRevenue),
+                    barTouchData: BarTouchData(
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          final date = dailyRevenue.keys.elementAt(6 - groupIndex);
+                          return BarTooltipItem(
+                            '${DateFormat('dd MMM').format(date)}\n',
+                            const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(
+                                text: currencyFormatter.format(rod.toY),
+                                style: const TextStyle(color: Colors.white, fontSize: 12),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      show: true,
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            final index = value.toInt();
+                            if (index >= 0 && index < 7) {
+                              final date = dailyRevenue.keys.elementAt(6 - index);
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  DateFormat('dd/MM').format(date),
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                              );
+                            }
+                            return const Text('');
+                          },
+                        ),
+                      ),
+                      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    ),
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    barGroups: _generateBarGroups(dailyRevenue),
+                  ),
                 ),
               ),
             ),
+            
+            const SizedBox(height: 24),
+            
+            // List of recent transactions or more info can be added here
           ],
         ),
       ),
     );
+  }
+
+  double _getMaxY(Map<DateTime, double> data) {
+    double max = data.values.fold(0, (prev, element) => element > prev ? element : prev);
+    return max == 0 ? 100 : max * 1.2;
+  }
+
+  List<BarChartGroupData> _generateBarGroups(Map<DateTime, double> data) {
+    List<BarChartGroupData> groups = [];
+    final keys = data.keys.toList().reversed.toList(); // Oldest to newest
+    
+    for (int i = 0; i < keys.length; i++) {
+      final value = data[keys[i]] ?? 0;
+      groups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: value,
+              color: Colors.blueAccent,
+              width: 16,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(4),
+                topRight: Radius.circular(4),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return groups;
   }
 
   Widget _buildSummaryCard(BuildContext context, String title, String value, Color color) {

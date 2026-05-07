@@ -77,12 +77,24 @@ class _HomeViewState extends State<HomeView> {
                               height: 50,
                               child: ElevatedButton.icon(
                                 onPressed: () async {
-                                  if (calculator.display != '0' && calculator.display != 'Error') {
-                                    await calculator.saveTransaction();
-                                    analytics.loadTransactions(); // Refresh analytics
+                                  bool success = await calculator.saveTransaction();
+                                  if (success) {
+                                    analytics.loadTransactions();
                                     if (mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Transaksi disimpan!')),
+                                        const SnackBar(
+                                          content: Text('Transaksi disimpan!'),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Masukkan nominal belanja (lebih dari 0)'),
+                                          backgroundColor: Colors.red,
+                                        ),
                                       );
                                     }
                                   }
