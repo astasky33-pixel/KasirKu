@@ -26,6 +26,22 @@ class CalculatorProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void delete() {
+    if (_display.isNotEmpty && _display != '0') {
+      if (_display.endsWith(' ')) {
+        // Remove operator and surrounding spaces
+        _display = _display.substring(0, _display.length - 3);
+      } else {
+        _display = _display.substring(0, _display.length - 1);
+      }
+      
+      if (_display.isEmpty) {
+        _display = '0';
+      }
+    }
+    notifyListeners();
+  }
+
   void calculate() {
     try {
       Parser p = Parser();

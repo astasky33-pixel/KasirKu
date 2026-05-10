@@ -68,7 +68,8 @@ class _HomeViewState extends State<HomeView> {
                           _buildButtonRow(context, ['7', '8', '9', '/']),
                           _buildButtonRow(context, ['4', '5', '6', '*']),
                           _buildButtonRow(context, ['1', '2', '3', '-']),
-                          _buildButtonRow(context, ['C', '0', '=', '+']),
+                          _buildButtonRow(context, ['C', '0', '⌫', '+']), // Using backspace symbol
+                          _buildButtonRow(context, ['=']), // Moving = to its own row or keeping it
                           const SizedBox(height: 8),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -134,7 +135,7 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _buildButton(BuildContext context, String label) {
     final calculator = Provider.of<CalculatorProvider>(context, listen: false);
-    bool isOperator = ['/', '*', '-', '+', '=', 'C'].contains(label);
+    bool isOperator = ['/', '*', '-', '+', '=', 'C', '⌫'].contains(label);
     
     return Expanded(
       child: Container(
@@ -143,6 +144,8 @@ class _HomeViewState extends State<HomeView> {
           onPressed: () {
             if (label == 'C') {
               calculator.clear();
+            } else if (label == '⌫') {
+              calculator.delete();
             } else if (label == '=') {
               calculator.calculate();
             } else if (['/', '*', '-', '+'].contains(label)) {
@@ -157,16 +160,18 @@ class _HomeViewState extends State<HomeView> {
                 : Colors.transparent,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: isOperator 
-                  ? Theme.of(context).colorScheme.onSecondaryContainer 
-                  : Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
+          child: label == '⌫' 
+              ? Icon(Icons.backspace_outlined, color: Theme.of(context).colorScheme.onSecondaryContainer)
+              : Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isOperator 
+                        ? Theme.of(context).colorScheme.onSecondaryContainer 
+                        : Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
         ),
       ),
     );
