@@ -68,8 +68,8 @@ class _HomeViewState extends State<HomeView> {
                           _buildButtonRow(context, ['7', '8', '9', '/']),
                           _buildButtonRow(context, ['4', '5', '6', '*']),
                           _buildButtonRow(context, ['1', '2', '3', '-']),
-                          _buildButtonRow(context, ['C', '0', '⌫', '+']), // Using backspace symbol
-                          _buildButtonRow(context, ['=']), // Moving = to its own row or keeping it
+                          _buildButtonRow(context, ['0', '00', '⌫', '+']),
+                          _buildButtonRow(context, ['C', '=']), 
                           const SizedBox(height: 8),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),

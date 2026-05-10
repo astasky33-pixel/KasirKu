@@ -13,7 +13,11 @@ class CalculatorProvider with ChangeNotifier {
 
   void append(String value) {
     if (_display == '0') {
-      _display = value;
+      if (value == '0' || value == '00') {
+        _display = '0';
+      } else {
+        _display = value;
+      }
     } else {
       _display += value;
     }
