@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/analytics_provider.dart';
+import '../widgets/currency_utils.dart';
 
 class AnalyticsView extends StatelessWidget {
   const AnalyticsView({super.key});
@@ -10,7 +11,6 @@ class AnalyticsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final analytics = Provider.of<AnalyticsProvider>(context);
-    final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
     final dailyRevenue = analytics.getDailyRevenueLast7Days();
 
     return Scaffold(
@@ -26,7 +26,7 @@ class AnalyticsView extends StatelessWidget {
                   child: _buildSummaryCard(
                     context, 
                     'Total Hari Ini', 
-                    currencyFormatter.format(analytics.totalToday), 
+                    CurrencyUtils.format(analytics.totalToday), 
                     Colors.blue
                   ),
                 ),
@@ -35,7 +35,7 @@ class AnalyticsView extends StatelessWidget {
                   child: _buildSummaryCard(
                     context, 
                     'Total Minggu Ini', 
-                    currencyFormatter.format(analytics.totalWeekly), 
+                    CurrencyUtils.format(analytics.totalWeekly), 
                     Colors.green
                   ),
                 ),
@@ -46,7 +46,7 @@ class AnalyticsView extends StatelessWidget {
             
             // Chart Section
             const Text(
-              'Tren Pendapatan (7 Hari Terakhir)',
+              'Pendapatan 7 Hari Terakhir',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -72,7 +72,7 @@ class AnalyticsView extends StatelessWidget {
                             const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                             children: [
                               TextSpan(
-                                text: currencyFormatter.format(rod.toY),
+                                text: CurrencyUtils.format(rod.toY),
                                 style: const TextStyle(color: Colors.white, fontSize: 12),
                               ),
                             ],

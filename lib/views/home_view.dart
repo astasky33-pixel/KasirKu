@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/calculator_provider.dart';
 import '../providers/analytics_provider.dart';
+import '../widgets/currency_utils.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -12,8 +12,6 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final currencyFormatter = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
-
   @override
   Widget build(BuildContext context) {
     final calculator = Provider.of<CalculatorProvider>(context);
@@ -42,13 +40,15 @@ class _HomeViewState extends State<HomeView> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            calculator.history.isEmpty ? 'Total Belanja' : calculator.history,
+                            calculator.history.isEmpty 
+                                ? 'Total Belanja' 
+                                : CurrencyUtils.formatDisplay(calculator.history),
                             style: const TextStyle(fontSize: 16, color: Colors.grey),
                           ),
                           FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              calculator.display,
+                              CurrencyUtils.formatDisplay(calculator.display),
                               style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
                               textAlign: TextAlign.right,
                             ),
@@ -66,7 +66,7 @@ class _HomeViewState extends State<HomeView> {
                       child: Column(
                         children: [
                           _buildButtonRow(context, ['7', '8', '9', '/']),
-                          _buildButtonRow(context, ['4', '5', '6', '*']),
+                          _buildButtonRow(context, ['4', '5', '6', 'x']),
                           _buildButtonRow(context, ['1', '2', '3', '-']),
                           _buildButtonRow(context, ['0', '00', '⌫', '+']),
                           _buildButtonRow(context, ['C', '=']), 
@@ -135,7 +135,7 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _buildButton(BuildContext context, String label) {
     final calculator = Provider.of<CalculatorProvider>(context, listen: false);
-    bool isOperator = ['/', '*', '-', '+', '=', 'C', '⌫'].contains(label);
+    bool isOperator = ['/', 'x', '-', '+', '=', 'C', '⌫'].contains(label);
     
     return Expanded(
       child: Container(
@@ -148,8 +148,9 @@ class _HomeViewState extends State<HomeView> {
               calculator.delete();
             } else if (label == '=') {
               calculator.calculate();
-            } else if (['/', '*', '-', '+'].contains(label)) {
-              calculator.append(' $label ');
+            } else if (['/', 'x', '-', '+'].contains(label)) {
+              final op = label == 'x' ? '*' : label;
+              calculator.append(' $op ');
             } else {
               calculator.append(label);
             }
